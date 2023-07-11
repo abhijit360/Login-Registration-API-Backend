@@ -17,9 +17,9 @@ class BankAccount(models.Model):
         ("HDF", "HDFC Bank"),
         ("IIB","IndusInd Bank")
     ]
-    name = models.CharField(max_length=3, choices=choices)
-    account_num = models.IntegerField()
-    IFSC_Code = models.IntegerField()
+    name = models.CharField(max_length=3, choices=choices, null=True, blank=True)
+    account_num = models.IntegerField(null=True, blank=True)
+    IFSC_Code = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
         try:
@@ -40,12 +40,13 @@ class CustomUser(models.Model):
     
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ["phone","name"]
+
     def save(self, *args, **kwargs):
         self.password = hashlib.md5(self.password.encode()).digest()
         super(CustomUser, self).save(*args, **kwargs)
     
     def __str__(self):
-        return self.name
+        return self.name 
     
 class JWT_storedVal(models.Model):
     jwt_token = models.CharField(max_length=250, unique=True)

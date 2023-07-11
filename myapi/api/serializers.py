@@ -38,8 +38,7 @@ class UserUpdateSerializer(serializers.Serializer):
 class myUserCreateSerializer(serializers.Serializer):
     email = serializers.EmailField()
     phone =  serializers.IntegerField()
-    first_name = serializers.CharField(max_length=30)
-    last_name = serializers.CharField(max_length=30)
+    name = serializers.CharField(max_length=250)
     password = serializers.CharField(max_length=100)
 
 

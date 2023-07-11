@@ -1,6 +1,6 @@
 from django.http import JsonResponse, HttpResponse
 from .models import CustomUser, JWT_storedVal
-from .serializers import UserSerializer, UserBankDetailsSerializer, UserUpdateSerializer, UserCreateSerializer
+from .serializers import UserSerializer, UserBankDetailsSerializer, UserUpdateSerializer, UserCreateSerializer ,myUserCreateSerializer
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 import hashlib, datetime
@@ -138,6 +138,7 @@ when entering query params into the url we do it as such: url/?name=abhijit . ur
 @api_view(["POST"])
 def create_user(request):
     if request.method =="POST":
+        print("request Data",request.data)
         email_data = [elem['email'] for elem in CustomUser.objects.all().values("email")]
         phone_data = [str(elem['phone']) for elem in CustomUser.objects.all().values("phone")]
 
@@ -147,15 +148,18 @@ def create_user(request):
             return JsonResponse({"Status_code" :"100", "message":"Email or Phone is already linked to an existing Account"})
         
         try:    
-            user = UserCreateSerializer(data=request.data)
+            user = myUserCreateSerializer(data=request.data)
             if user.is_valid(raise_exception=True):
-                user.save()
-                jwt = create_JWT(user.id)
-                JsonToReturn= {"status_code" :"200", "message":f"Created User {user.data['name']}", "user_data":user.data}
-                response = HttpResponse(json.dumps(JsonToReturn), content_type="application/json")
-                response.headers["Authorization"] = 'Bearer ' + jwt
-                return response
+    
+                created_user = CustomUser.objects.create(name=user.data['name'],email=user.data['email'],phone=user.data['phone'], password=user.data['password'])
         
+                serializer = UserSerializer(created_user)
+
+                jwt = create_JWT(created_user.id)
+                JsonToReturn = {"status_code":"200", "message":"Successfully Registered","user_data":serializer.data}
+                response = HttpResponse(json.dumps(JsonToReturn), content_type="application/json")
+                response.headers["authorization"] = 'Bearer ' + jwt
+                return response
         except Exception as e:
             return JsonResponse({"Status_code" :"100", "message":f"{e}"})
         
