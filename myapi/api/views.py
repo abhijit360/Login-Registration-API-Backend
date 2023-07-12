@@ -80,10 +80,10 @@ def getFreshJWTToken(request):
                 jwt =  create_JWT(userFound.id)
                 return JsonResponse({'status_code':200,"access_token":jwt})
             else:
-                return JsonResponse({"status_code":100,"Error":"Password Entered is Incorrect"})
+                return JsonResponse({"Status_code":100,"Error":"Password Entered is Incorrect"})
 
         else:
-            return JsonResponse({"status_code":100,'Error':"User does not exist"})
+            return JsonResponse({"Status_code":100,'Error':"User does not exist"})
      
 """ 
 redis is like a database. Whenever we create a jwt token, we store the key value pair. 
@@ -145,7 +145,7 @@ def create_user(request):
         email , phone = request.data["email"] , request.data['phone']
       
         if (email in email_data) or (phone in phone_data):
-            return JsonResponse({"Status_code" :"100", "message":"Email or Phone is already linked to an existing Account"})
+            return JsonResponse({"Status_code" :"100", "error":"Email or Phone is already linked to an existing Account"})
         
         try:    
             user = myUserCreateSerializer(data=request.data)
@@ -161,7 +161,7 @@ def create_user(request):
                 response.headers["authorization"] = 'Bearer ' + jwt
                 return response
         except Exception as e:
-            return JsonResponse({"Status_code" :"100", "message":f"{e}"})
+            return JsonResponse({"Status_code" :"100", "error":f"{e}"})
         
 
 @api_view(["POST"])
@@ -183,7 +183,7 @@ def login_user(request):
                 return response
         except Exception as e:
             print(e)
-            return JsonResponse({"status_code":"100", "message":"Unsucessful login. User does not exist"})
+            return JsonResponse({"Status_code":"100", "error":"Unsucessful login. User does not exist"})
     
         
     
@@ -210,13 +210,13 @@ def update_user(request):
                 phone =  serialized_data.data['phone']
                 
                 if email in email_data:
-                    return JsonResponse({"Status Code": "100", "Error":"Email already registered. Please enter a new Email"})
-                if phone in phone_data:
-                    return JsonResponse({"Status Code": "100", "Error":"Number is already registered. Please enter a new number"})
+                    return JsonResponse({"Status Code": "100", "error":"Email already registered. Please enter a new Email"})
+                if phone in phone_data and phone != oldPhone:
+                    return JsonResponse({"Status Code": "100", "error":"Number is already registered. Please enter a new number"})
                 
         else:
             JsonResponse({"status_code":"100", 
-                "message":"User does not exist"})
+                "error":"User does not exist"})
 
         
 @api_view(["POST"])
@@ -232,7 +232,7 @@ def delete_user(request):
                     "message":"User Deleted Successfully"})
     
     return JsonResponse({"status_code":"100", 
-                "message":"User Deletion Unsuccessful"})
+                "error":"User Deletion Unsuccessful"})
 
 @api_view(["GET"])
 @isJWTValid
@@ -252,7 +252,7 @@ def get_users(request):
                 #     cursor.execute("SELECT")
                 queryset = queryset.filter(name=name)
             except Exception as e:
-                JsonToReturn= {"status_code" :"100", "Message":f"Could not find any user with name: {name} "}
+                JsonToReturn= {"status_code" :"100", "error":f"Could not find any user with name: {name} "}
                 response = HttpResponse(json.dumps(JsonToReturn), content_type="application/json")
                 response.headers["Authorization"] = 'Bearer ' + jwt
                 return response
@@ -262,7 +262,7 @@ def get_users(request):
                 queryset = queryset.filter(email=email)
                 
             except:
-                JsonToReturn= {"status_code" :"100", "Message":f"user with email {email} does not exist"}
+                JsonToReturn= {"status_code" :"100", "error":f"user with email {email} does not exist"}
                 response = HttpResponse(json.dumps(JsonToReturn), content_type="application/json")
                 response.headers["Authorization"] = 'Bearer ' + jwt
                 return response
@@ -272,7 +272,7 @@ def get_users(request):
             try:
                 queryset = queryset.filter(phone=int(phone))
             except:
-                JsonToReturn = {"status_code" :"100", "Message":f"user with phone number {phone} does not exist"}
+                JsonToReturn = {"status_code" :"100", "error":f"user with phone number {phone} does not exist"}
                 response = HttpResponse(json.dumps(JsonToReturn), content_type="application/json")
                 response.headers["Authorization"] = 'Bearer ' + jwt
                 return response
